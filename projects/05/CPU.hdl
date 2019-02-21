@@ -73,7 +73,6 @@ CHIP CPU {
     Or(a = JEQ, b = JLT, out = JLE);
     Or(a = JLE, b = JGT, out = JumpToA);
     And(a = instruction[15], b = JumpToA, out = PCLoad);
-    Not(in = PCLoad, out = PCinc);
-    PC(in = ARegOUT, load = PCLoad, inc = PCinc, reset = reset, out[0..14] = pc);
+    PC(in = ARegOUT, load = PCLoad, inc = true, reset = reset, out[0..14] = pc);
 
 }
