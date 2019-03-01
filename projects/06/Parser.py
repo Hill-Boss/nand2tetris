@@ -1,13 +1,11 @@
 import SymbolTable as st
+import Code as c
 
 A_COMMAND = 0
 C_COMMAND = 1
 L_COMMAND = 2
 
 cmds = []
-curr = []
-
-RESERVED = ['@', '(', ')', 'D', 'A', 'M', '=', ';', 'JGT', 'JEQ', 'JGE', 'JLT', 'JNE', 'JLE', 'JMP']
 
 def init(fileName):
     file = open(fileName, 'r')
@@ -19,7 +17,7 @@ def init(fileName):
             temp = lines[i].split('//')
             del lines[i]
             lines.insert(i, temp[0])
-            
+
     # add to cmds if line has @,D,A,M,(
     for i in range(len(lines)):
         if '@' in lines[i] or 'D' in lines[i] or 'A' in lines[i] or 'M' in lines[i] or '(' in lines[i] or '=' in lines[i] or ';' in lines[i] :
@@ -28,115 +26,79 @@ def init(fileName):
     for i in range(len(cmds)):
         cmds[i] = cmds[i].replace(" ", "")
         cmds[i] = list(cmds[i])
-##    print(cmds)
 
-           
 def decimalToBinary(n, fill):
     return (bin(int(n))[2:]).zfill(fill)
 
-def currentCommand():
-    global curr
-    return curr[len(curr)-1]
-
-
-# return false if on last cmd
-def hasMoreCommands():
-    global curr
-    return len(curr) < len(cmds)
-
-
-def advance():
-    if hasMoreCommands():
-        global curr
-        if curr == []:
-            curr.append(cmds[0])
-        else:
-            curr.append(cmds[len(curr)])
-            
-
-def commandType():
-    global curr
-    if curr[len(curr)-1][0] == '@':
-        return A_COMMAND
-    elif curr[len(curr)-1][0] == '(':
-        return L_COMMAND
-    else:
-        return C_COMMAND
-
-
-def symbol():
-    symbol = ""
-    if commandType() == A_COMMAND:
-        for i in curr[len(curr)-1][1:]:
-            symbol += i
-        return symbol
-    elif commandType() == L_COMMAND:
-        for i in curr[len(curr)-1][1:len(curr[len(curr)-1])-1]:
-            symbol += i
-        return symbol
-
-
-def dest():
+def dest(line):
     dest = ""
-    if commandType() == C_COMMAND:
-        if '=' in curr[len(curr)-1]:
-            for i in curr[len(curr)-1]:
+    if '@' not in line and '(' not in line:
+        if '=' in line:
+            for i in line:
                 if i != '=':
                     dest += i
                 else:
                     return dest
-        return " = not in current command thus no dest"
 
 
-def comp():
+def comp(line):
     comp = ""
-    if commandType() == C_COMMAND:
-        if '=' in curr[len(curr)-1]:
-            for i in curr[len(curr)-1][curr[len(curr)-1].index('=')+1:]:
+    if '@' not in line and '(' not in line:
+        if '=' in line:
+            for i in line[line.index('=')+1:]:
                 if i != ';':
                     comp += i
                 else:
                     break
         else:
-            for i in curr[len(curr)-1]:
+            for i in line:
                 if i != ';':
                     comp += i
                 else:
                     break
         return comp
 
-
-def jump():
+def jump(line):
     jump = ""
-    if commandType() == C_COMMAND:
-        if ';' in curr[len(curr)-1]:
-            for i in curr[len(curr)-1][curr[len(curr)-1].index(';')+1:]:
+    if '@' not in line and '(' not in line:
+        if ';' in line:
+            for i in line[line.index(';')+1:]:
                 jump += i
         else:
             return " ; not in current command thus no jump"
         return jump
 
-def DoublePass():
+def symbolToBinary(symbolString):
+    if st.contains(symbolString):
+        symbol = st.getAddress(symbolString)
+    else:
+        symbol = int(symbolString)
+    return decimalToBinary(symbol, 15)
+
+def buildCode(line):
+    binaryString = ''
+    if '@' in line:
+        binaryString += '0' + symbolToBinary(''.join(line[1:]))
+    else:
+        binaryString += '111' + c.comp(comp(line)) + c.dest(dest(line)) + c.jump(jump(line))
+    binaryString += "\n"
+    return binaryString
+
+def DoublePass(fileOUT):
     offset = 0
     for i in range(len(cmds)):
         if '(' in cmds[i]:
             st.addEntry(''.join(cmds[i][1:len(cmds[i])-1]), i - offset)
             offset += 1
 
-    memory = 16
-    for i in range(len(cmds)):
-        if '@' in cmds[i]:
-            num = -1
-            try:
-                
-                num = int(''.join(cmds[i][1:]))
-##                print(num)
-            except:
-                pass
-            if num == -1:
-                if st.getAddress(''.join(cmds[i][1:])) == None:
-##                    print(''.join(cmds[i][1:]), " ", memory)
-                    st.addEntry(''.join(cmds[i][1:]), memory)
-                    memory += 1
-
-    
+            memory = 16
+            for i in range(len(cmds)):
+                if '@' in cmds[i]:
+                    try:
+                        num = int(''.join(cmds[i][1:]))
+                    except:
+                        if st.getAddress(''.join(cmds[i][1:])) == None:
+                            st.addEntry(''.join(cmds[i][1:]), memory)
+                            memory += 1
+                            if '(' not in cmds[i]:
+                                fileOUT.write(buildCode(cmds[i]))
