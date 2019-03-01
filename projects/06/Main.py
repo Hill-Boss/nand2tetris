@@ -19,12 +19,10 @@ def main():
         pass
     OUTPUT = open(fileOUT, 'w')
 
-
     p.init(fileASM)
     p.DoublePass(OUTPUT)
     OUTPUT.close()
 
-    # binary = c.buildCode(p).split('\n')
     binary = FileRead(fileOUT)
     answers = FileRead(fileANS)
     check = checkAll(binary, answers).split('\n')
