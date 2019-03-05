@@ -92,13 +92,14 @@ def DoublePass(fileOUT):
             offset += 1
 
             memory = 16
-            for i in range(len(cmds)):
-                if '@' in cmds[i]:
-                    try:
-                        num = int(''.join(cmds[i][1:]))
-                    except:
-                        if st.getAddress(''.join(cmds[i][1:])) == None:
-                            st.addEntry(''.join(cmds[i][1:]), memory)
-                            memory += 1
-                            if '(' not in cmds[i]:
-                                fileOUT.write(buildCode(cmds[i]))
+
+    for i in range(len(cmds)):
+        if '@' in cmds[i]:
+            try:
+                num = int(''.join(cmds[i][1:]))
+            except:
+                if st.getAddress(''.join(cmds[i][1:])) == None:
+                    st.addEntry(''.join(cmds[i][1:]), memory)
+                    memory += 1
+        if '(' not in cmds[i]:
+            fileOUT.write(buildCode(cmds[i]))
