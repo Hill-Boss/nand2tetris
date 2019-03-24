@@ -1,0 +1,26 @@
+#!/bin/bash
+
+# python3 Main.py ./MemoryAccess/BasicTest/BasicTest > file1.asm
+# python3 Main.py ./StackArithmetic/SimpleAdd/SimpleAdd > file2.asm
+
+# python3 Main.py ./SimpleTestVMs/SimpleAdd > ./SimpleTestVMs/add.asm
+# python3 Main.py ./SimpleTestVMs/SimpleSub > ./SimpleTestVMs/sub.asm
+# python3 Main.py ./SimpleTestVMs/SimpleAnd > ./SimpleTestVMs/and.asm
+# python3 Main.py ./SimpleTestVMs/SimpleOr > ./SimpleTestVMs/or.asm
+# python3 Main.py ./SimpleTestVMs/SimpleNeg > ./SimpleTestVMs/neg.asm
+# python3 Main.py ./SimpleTestVMs/SimpleNot > ./SimpleTestVMs/not.asm
+#
+# python3 Main.py ./SimpleTestVMs/SimpleEq > ./SimpleTestVMs/eq.asm
+# python3 Main.py ./SimpleTestVMs/SimpleGt > ./SimpleTestVMs/gt.asm
+# python3 Main.py ./SimpleTestVMs/SimpleLt > ./SimpleTestVMs/lt.asm
+
+python3 Main.py ./SimpleTestVMs/SimpleAdd
+# python3 Main.py ./SimpleTestVMs/SimpleSub
+# python3 Main.py ./SimpleTestVMs/SimpleAnd
+# python3 Main.py ./SimpleTestVMs/SimpleOr
+# python3 Main.py ./SimpleTestVMs/SimpleNeg
+# python3 Main.py ./SimpleTestVMs/SimpleNot
+#
+# python3 Main.py ./SimpleTestVMs/SimpleEq
+# python3 Main.py ./SimpleTestVMs/SimpleGt
+# python3 Main.py ./SimpleTestVMs/SimpleLt
