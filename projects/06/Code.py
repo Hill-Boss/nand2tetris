@@ -1,7 +1,5 @@
-import Parser as p
-
 #A = 0 (15 bit number)
-#L = 0 (15 bit address for ROM)
+#L = add symbol to table if not in table
 #C = 1 1 1 a c1 c2 c3 c4 c5 c6 d1 d2 d3 j1 j2 j3
 
 comp_codes = { '0':'0101010',
@@ -31,19 +29,24 @@ comp_codes = { '0':'0101010',
 
 
 def comp(compString):
-    return comp_codes[compString]
+    try:
+        return comp_codes[compString]
+    except:
+        pass
 
 def dest(destString):
+
     dest = 0
-
-    if 'A' in destString:
-        dest += 4
-    if 'D' in destString:
-        dest += 2
-    if 'M' in destString:
-        dest += 1
-
-    return p.decimalToBinary(dest, 3)
+    try:
+        if 'A' in destString:
+            dest += 4
+        if 'D' in destString:
+            dest += 2
+        if 'M' in destString:
+            dest += 1
+    except:
+        pass
+    return decimalToBinary(dest, 3)
 
 def jump(jumpString):
     jump = 0
@@ -63,27 +66,7 @@ def jump(jumpString):
     elif 'JMP' in jumpString:
         jump = 7
 
-    return p.decimalToBinary(jump, 3)
+    return decimalToBinary(jump, 3)
 
-def symbolToBinary(symbolString, pars):
-    if pars.st.contains(symbolString):
-        symbol = pars.st.getAddress(symbolString)
-    else:
-        symbol = int(symbolString)
-    return pars.decimalToBinary(symbol, 15)
-
-def buildCode(pars):
-    binaryStringAll = ''
-    while pars.hasMoreCommands():
-        pars.advance()
-        if pars.commandType() == pars.A_COMMAND:
-            binaryStringAll += '0' + symbolToBinary(pars.symbol(), pars)
-        elif pars.commandType() == pars.L_COMMAND:
-            continue
-##            binaryStringAll += '0' + symbolToBinary(pars.symbol(), pars)
-        elif pars.commandType() == pars.C_COMMAND:
-            binaryStringAll += '111' + comp(pars.comp()) + dest(pars.dest()) + jump(pars.jump())
-        binaryStringAll += "\n"
-    return binaryStringAll
-            
-    
+def decimalToBinary(n, fill):
+    return (bin(int(n))[2:]).zfill(fill)

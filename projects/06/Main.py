@@ -2,7 +2,6 @@ import Parser as p
 import Code as c
 
 def main():
-
     fileIN = input("Enter File path without extension .asm i.e. ./rect/RectL ")
     if "./" not in fileIN:
         file = "./" + fileIN.lower() + "/" + fileIN[0].upper() + fileIN[1:].lower()
@@ -11,15 +10,21 @@ def main():
 
     fileASM = file + ".asm"
     fileANS = file + ".hack"
+    fileOUT = file + "OUT.hack"
 
+    try:
+        t = open(fileOUT, 'x')
+        t.close()
+    except:
+        pass
+    OUTPUT = open(fileOUT, 'w')
 
     p.init(fileASM)
-    p.DoublePass()
+    p.DoublePass(OUTPUT)
+    OUTPUT.close()
 
-
-
-    binary = c.buildCode(p).split('\n')
-    answers = answer(fileANS)
+    binary = FileRead(fileOUT)
+    answers = FileRead(fileANS)
     check = checkAll(binary, answers).split('\n')
 
     for i in range(len(binary)-1):
@@ -34,7 +39,6 @@ def main():
 
 
 def checkAll(binary, answers):
-
     ansList = ""
     if len(answers) != len(binary):
         print("THE NUMBER OF BINARY OUTPUT LINES IS NOT EQUAL TO THE NUMBER OF ANSWER LINES")
@@ -48,7 +52,7 @@ def checkAll(binary, answers):
         return ansList
 
 
-def answer(fileName):
+def FileRead(fileName):
     file = open(fileName, 'r')
     lines = file.read()
     lines = lines.split('\n')
@@ -58,5 +62,4 @@ def answer(fileName):
 
 
 if __name__ == '__main__':
-
     main()
