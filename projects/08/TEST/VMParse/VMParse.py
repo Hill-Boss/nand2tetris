@@ -1,12 +1,11 @@
 # VML to ML
 # .vm to .asm assembler
-# Chapter 07 .vm to .asm without flow Control
 '''By Cody Hill-Boss'''
 
 
 filename = ""
 
-def VMParse(fileVM, fileASM, filenameOnly):
+def VMParse(fileVM, fileASM, filenameOnly, bool_multiple):
 
     filename = filenameOnly
 
@@ -30,22 +29,29 @@ def VMParse(fileVM, fileASM, filenameOnly):
     for i in range(len(VML)):
         VML[i] = VML[i].split()
 
-    # STR = initialize(256, "SP") # start SP at 256
+
+    # BootStrap code
+    # STR = "@256\nD=A\n@SP\nM=D\n"
+    # STR += Parse([['call', 'Sys.init', '0']])
 
     # Parse the .vm file
     STR = Parse(VML)
 
-    # print(STR)
     fileASM = open(fileASM, "w")
     fileASM.write(STR)
     fileASM.close()
+
+    if bool_multiple == 1:
+        return STR
 
 def initialize(num, arg):
     return "@" + str(num) + "\nD=A\n@" + arg + "\nM=D\n"
 
 def Parse(cmds):
     STR = "// ALL PARSED VM COMMANDS\n"
+    i = len(cmds)
     for cmd in cmds:
+        i -= 1
         STR += "// VM Code: "  + ' '.join(cmd) + "\n"
         if "push" in cmd:
             if len(cmd) != 3:
@@ -188,3 +194,54 @@ def gt():
 
 def lt():
     return bool_start() + "D;JLT\n" + bool_end()
+
+# VM Control
+
+def goto(labelname):
+    return "@" + filename + '.' + str(labelname) + "\n0;JMP\n"
+
+def if_goto(labelname):
+    return pop_D() + "D=D+1\n@" + str(labelname) + "\nD;JGT\n"
+    # my understanding is if-goto jumps if top of stack is -1 (true) i.e. pop_D() + D=D+1 + D;JEQ
+
+def label(labelname):
+    return "("  + filename + '.' + str(labelname) + ")\n"
+
+callnum = -1
+def callFunction(FunctionName, nArgs):
+    global callnum
+    callnum += 1
+    # global RETURN_ADDRESSES
+    RETURN_ADDRESS = FunctionName + str(callnum)
+    # RETURN_ADDRESSES.append(RETURN_ADDRESS)
+    return_str = "@" + RETURN_ADDRESS + "\nD=A\n" + push_D()
+    return_str += saveFrame('LCL') + saveFrame('ARG') + saveFrame('THIS') + saveFrame('THAT')
+    return_str += "@" + str(int(nArgs) + 5) + "\nD=A\n@R0\nA=M\nAD=A-D\n" + "@ARG\nM=D\n"
+    return_str += "@SP\nD=M\n@LCL\nM=D\n"
+    return_str += goto(str(FunctionName))
+    return_str += label(RETURN_ADDRESS) # "(" + RETURN_ADDRESS + ")\n"
+    return return_str
+
+# Helper function for callFunction
+def saveFrame(name):
+    return "@" + str(name) + "\nD=M\n" + push_D()
+
+def makeFunction(FunctionName, nVars):
+    str = label(FunctionName)
+    for i in range(int(nVars)):
+        str += "D=0\n" + push_D()
+    return str
+
+def return_control():
+    str = "@R1\nD=M\n@R13\nM=D\n"
+    str += "@5\nA=D-A\nD=M\n@R14\nM=D\n"
+    str += "@SP\nM=M-1\n@ARG\nAD=M\n"
+    str += "@R15\nM=D\n@SP\nA=M\nD=M\n"
+    str += "@R15\nA=M\nM=D\n@R2\nD=M\n"
+    str += "@R0\nM=D+1\n@R13\nD=M\nD=D-1\n@R13\nM=D\nA=D\nD=M\n"
+    str += "@R4\nM=D\n@R13\nD=M\nD=D-1\n@R13\nM=D\nA=D\nD=M\n"
+    str += "@R3\nM=D\n@R13\nD=M\nD=D-1\n@R13\nM=D\nA=D\nD=M\n"
+    str += "@R2\nM=D\n@R13\nD=M\nD=D-1\n@R13\nM=D\nA=D\nD=M\n"
+    str += "@R1\nM=D\n"
+    str += "@R14\nA=M\n0;JMP\n"
+    return str
